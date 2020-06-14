@@ -1,0 +1,568 @@
+Java Persistence
+	• The Java Persistence API (JPA) is a Java specification provided by Oracle for accessing, persisting, and managing data between Java objects and a relational database using JSE and JEE.
+	
+Managing Entities
+	• Entities are managed by the entity manager
+	• In JPA entity manager is represented by javax.persistence.EntityManager instances.
+	• Each EntityManager instance is associated with a persistence context.
+	• A persistence context defines the scope under which particular entity instances are created, persisted, and removed.
+	
+Entity Manager
+	• Functions of EntityManager:
+		• creates and removes persistent entity instances
+		• finds entities by the entity’s primary key
+		• allows queries to be run on entities
+	
+	• There are two types of EntityManagers:
+		
+		• Application-Managed EntityManagers
+			• ie: run via Java SE
+		
+		• Container-Managed EntityManagers
+			• ie: run via Java EE Container eg: Tomcat
+			
+Application-Managed EntityManager
+	
+	• Java SE applications create EntityManager instance by using Persistence class and EntityManagerFactory interface
+	
+	• javax.persistence.Persistence
+		• Root class for obtaining an EntityManager
+		• Locates provider service for a named persistence unit
+		• Invokes on the provider to obtain an EntityManagerFactory
+	
+	• javax.persistence.EntityManagerFactory
+		• Creates EntityManagers for a named persistence unit or configuration
+
+Persistence Units
+	• A persistence unit defines a set of all entity classes that are managed by EntityManager instances in an application .
+	• Each persistence unit can have different providers and database drivers.
+	• Persistence units are defined by the persistence.xml configuration file.
+	
+persistence.xml
+	• A persistence.xml file defines one or more persistence units
+		
+		<persistence-unit name=“punit">
+			<class>com.model.Employee</class>
+			<properties>
+				<property name="javax.persistence.jdbc.driver" value="oracle.jdbc.driver.OracleDriver" />
+				<property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@127.0.0.1:1521:XE" />
+				<property name="javax.persistence.jdbc.user" value="system" />
+				<property name="javax.persistence.jdbc.password" value="hr" />
+				<property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />
+				<property name="hibernate.show_sql" value="true" />
+				<property name="hibernate.hbm2ddl.auto" value="update"/>
+			</properties>
+		</persistence-unit>
+		
+JPA Entities
+	• JPA Entities
+		• JPA Entity classes are user defined classes whose instances can be stored in a database.
+		• To store data in a database using JPA you have to define entity classes that represent your application data object model.
+	
+	• JPA Annotations
+		• @Entity
+			• Each class which needs to be persisted in the database must be annotated with @Entity annotation
+		
+		• @Table
+			• By default database table is mapped by the entity name. If table and entity name cannot be same then you can use @Table annotation
+		
+		• @Id
+			• Indicates the member field is the primary key of current entity
+		
+		• @Column
+			• All instance variables of the entity class are mapped to individual columns of the table.
+			• By default table column name will be same as variable name. You can specify different column names by using @Column annotation.
+
+JPQL Introduction
+	• Java Persistence Query Language (JPQL)
+		• It is a platform-independent object-oriented query language defined as part of the Java Persistence API (JPA) specification.
+		• In JPQL we work with entities and collection of entities, while in SQL we work with columns and rows, here the role of JPA is to transform JPQL into SQL.
+		• The persistence engine parses the query string, transform the JPQL to the native SQL before executing it.
+	
+	• Note:
+		• JPQL is an extension of Entity JavaBeans Query Language (EJBQL), adding the following important features to it: -
+			• It can perform join operations.
+			• It can update and delete data in a bulk.
+			• It can perform aggregate function with sorting and grouping clauses.
+			• Single and multiple value result types.
+			
+	• JPQL Features
+		• It is a platform-independent query language.
+		• It is simple and robust.
+		• It can be used with any type of database such as MySQL, Oracle.
+		• JPQL queries can be declared statically into metadata or can also be dynamically built in code.
+
+	• Creating Queries in JPQL
+		• JPQL provides several methods that can be used to obtain Query instances:
+			• EntityManager.createNamedQuery (static query)
+			• EntityManager.createQuery (dynamic query)
+			• EntityManager.createNativeQuery (native query)
+			
+Query API:
+		• It provides various methods to control the execution of query.
+		
+		• Some of the Query Interface Methods: -
+			• int executeUpdate()
+				• This method executes the update and delete operation.
+			
+			• int getFirstResult()
+				• This method returns the first positioned result the query object was set to retrieve.
+			
+			• java.util.List getResultList()
+				• This method execute query returning multiple results.
+			
+			• Query setFirstResult(int startPosition)
+				• This method assigns the position of first result to retrieve.
+			
+			• Query setMaxResults(int maxResult)
+				• This method assigns the maximum numbers of result to retrieve.
+				
+Dynamic Queries
+	• Dynamic queries are queries that are defined directly within an application’s business logic
+	
+	• Dynamic queries are not efficient and slower as persistence engine has to parse, validate & map the JPQL to SQL at run-time
+	
+	• Example
+	
+			public List findAll(String entityName){
+				return entityManager.createQuery("select e from " + entityName + " e").getResultList();
+			}
+			
+Static (Named) Queries
+	• Static/Named Queries
+		• Defined statically with the help of @NamedQuery annotation together with the entity class
+	
+	• @NamedQuery elements:
+		• name - the name of the query that will be used with the createNamedQuery method
+		• query – query string
+	
+	• Example
+		
+		@NamedQuery(name="findAllCustomers", query="SELECT c FROM Customer")
+	
+	• Multiple Named Queries
+		• Multiple named queries can be logically defined with the help of @NamedQueries annotation
+				
+				@NamedQueries( {
+					@NamedQuery(name = “Mobile.selectAllQuery” query = “SELECT M FROM MOBILEENTITY”),
+					@NamedQuery(name = “Mobile.deleteAllQuery” query = “DELETE M FROM MOBILEENTITY”)
+				} )
+				
+Parameter Binding
+	• Parameter Binding
+		• Parameter binding is the process of binding a Java variable with JPQL statement.
+	
+	• Named Parameter Binding
+		• Named parameters are parameters in a query that are prefixed with a colon (:)
+		• Query.setParameter(String name, Object value) is used to bound the parameter.
+	
+	• Example
+		
+		public List findWithName(String name) {
+			return em.createQuery("SELECT c FROM Customer c WHERE c.name LIKE :custName").setParameter("custName", name).getResultList();
+		}
+		
+	• Positional Parameters
+		• Positional parameters are prefixed with a question mark (?) and number of the parameter in the query.
+	
+	• Example
+		
+		Query.setParameter(integer position, Object value)
+		
+		public List findWithName(String name) {
+			return em.createQuery(“SELECT c FROM Customer c WHERE c.name LIKE ?1”).setParameter(1, name).getResultList();
+		}
+		
+Query Operations – Multiple Results
+	• Query.getResultList() :
+		• Will execute a query and may return a List object containing multiple entity instances
+	
+	• Exmaple
+		
+		Query = entityManager.createQuery(“SELECT C FROM CUSTOMER”);
+		List<Customer> customers = (List<Customer>)query.getResultList();
+		
+	• Query Operations – Single Result
+		• A query that returns a single entity object
+	
+	• Example
+		
+		Query singleSelectQuery = entityManager.createQuery(“SELECT C FROM CUSTOMER WHERE C.ID = ‘ABC-123’”);
+		Customer custObj = singleSelectQuery.getSingleResult();
+	
+	• If the match wasn’t successful, then EntityNotFoundException is returned
+	
+	• If more than one matches occur during query execution a run-time exception NonUniqueResultException will be thrown
+
+JPQL Statement Language
+	• JPQL statement types:
+		• SELECT, UPDATE, DELETE
+	
+	• JPQL Supported clauses:
+		• FROM
+		• WHERE
+		• GROUP_BY
+		• HAVING
+		• ORDER BY
+		• …
+	
+	• Conditional expressions, aggregate functions,…
+	
+Introduction to JPA Criteria API
+	• JPA Criteria API
+		• The Criteria API was introduced in JPA 2.0. it provides a way of constructing queries for entities and their persistent state.
+		• It is the alternative way of defining a JPQL query. These queries are type-safe, and portable and easy to modify by changing the syntax.
+		• The major advantage of the criteria API is that errors can be detected earlier during compile time.
+		• String based JPQL queries and JPA criteria based queries are same in performance and efficiency.
+	
+Steps to create Criteria Query
+	• CriteriaBuilder Interface
+		• Act as the entry point to the Criteria API. It is used to construct query objects and their expressions.
+		• It’s instance is obtained using getCriteriaBuilder() method of EntityManager or EntityManagerFactory.
+			
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+	
+	• CriteraQuery
+		• A CriteriaQuery object represents a query. It is created using createQuery() methods of the CriteriaBuilder interface.
+			
+			CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+	
+	• The CriteriaQuery interface has various methods to create query clauses.
+		• select() defines a 'select' clause.
+		• where() defines the 'where' clause.
+		
+	• Root<T>
+		• This represents root type of the target 'entity'. Query root references the target entity (T).
+		• It’s object is obtain using from(Class<T> entityClass) method of CriteriaQuery interface.
+			
+				Root<Employee> employeeRoot = criteriaQuery.from(Employee.class);
+	
+	• Constructing query
+		• CriteriaQuery provides different methods (select(), where() etc) which are used to create query clauses, we start building query by 'selecting' the item that is to be returned in the query result:
+				
+				criteriaQuery.select(employeeRoot);
+	
+		• You can further apply the clauses to the CriteriaQuery object by using Root instance to navigate the target entity attributes and by using CriteriaBuilder instance to build query predicates:
+	
+				criteriaQuery.where(criteriaBuilder.equal(employeeRoot.get("dept"), "Admin"));
+	
+		• In above snippet we are using CriteriaBuilder equal() method which returns an instance of javax.persistence.criteria.Predicate.
+	
+	• Executing query
+		• createQuery() method of EntityManger is used to get the instance of Query or TypedQuery<T> which is then used to execute the query:
+			
+			Query q= entityManager.createQuery(criteriaQuery);
+			TypedQuery<Employee> typedQuery = entityManager.createQuery(criteriaQuery);
+			List<Employee> list = typedQuery.getResultList()
+			
+Methods of Criteria API Query Clauses
+	• Following is the list of clauses with the corresponding interface and methods.
+	
+			Clause 			Criteria API Interface 			Methods
+			--------------------------------------------------------------------------
+			SELECT 			CriteriaQuery 							select()
+			FROM 				AbstractQuery 						from()
+			WHERE 			AbstractQuery	 						where()
+			ORDER BY 		CriteriaQuery 							orderBy()
+			GROUP BY 		AbstractQuery 						groupBy()
+			HAVING 			AbstractQuery 						having()
+	
+	• Note: - The CriteriaQuery interface is the sub-interface of AbstractQuery interface.
+	
+JPA Criteria API - Query Selection
+	• Entity selection
+	
+	• Below example select entity by using CriteriaQuery#select() Method.
+	
+			CriteriaQuery<Employee> query = criteriaBuilder.createQuery(Employee.class);//query object
+			Root<Employee> employee = query.from(Employee.class);//from part
+			query.select(employee);//selection part
+			List<Employee> employees = entityManager.createQuery(query).getResultList();
+	
+	• Let’s understand select() method signature in CriteriaQuery class:
+			
+			CriteriaQuery<T> select(Selection<? extends T> selection);
+	
+	• The parameter Selection defines an item that is to be returned in a query result. In above entity selection example we selected Root<Employee (query.select(employee)).
+	
+	• Root class also implements Selection interface (Root > From > Path > Expression> Selection).
+	
+JPA Criteria API - Query Selection Other Than Entities
+	• Single field selection
+		• To select a single field use Root.get() method which returns a Path instance which is sub-interface of Selection.
+	
+	• Example
+		
+			CriteriaQuery<String> query = criteriaBuilder.createQuery(String.class);//query object
+			Root<Employee> employee = query.from(Employee.class);//from part
+			query.select(employee.get("name"));//single field selection
+			List<String> list = entityManager.createQuery(query).getResultList()
+		
+Multiple fields selection
+	• Multiple Fields Selection
+		• To select multiple fields, we need to pass CompoundSelection (sub-interface of Selection) to CriteriaQuery select() method.
+	
+	• You can create CompoundSelection by using array() method of CriteriaBuilder:
+	
+	• Example:
+			
+			CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);//query object
+			Root<Employee> employee = query.from(Employee.class);
+			query.select(criteriaBuilder.array(employee.get(“name”), employee.get(“salary”)));
+			List<Object[]> list = entityManger.createQuery(query).getResultList();
+			
+Multiple fields selection
+	• Alternatively You can use CriteriaQuery multiselect() instead of CriteriaQuery select().
+	
+			CriteriaQuery<T> multiselect(Selection<?>... selections);
+	
+	• Example:
+			
+			CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);//query object
+			Root<Employee> employee = query.from(Employee.class);
+			query.multiselect(employee.get(“name)”, employee.get(“salary”));
+			List<Object[]> list = entityManager.createQuery(query).getResultList();
+			
+JPA Criteria WHERE Clause
+	• CriteriaQuery.where() methods
+		• The WHERE clause is used to apply conditions on database and fetch the data on the basis of that condition. In Criteria API, the where() method of AbstractQuery interface is used to set conditions.
+	
+	• Where clause query restrictions are applied via following methods of CriteriaQuery interface:
+			
+			public interface CriteriaQuery<T> extends AbstractQuery<T> {
+				CriteriaQuery<T> where(Expression<Boolean> restriction); //applies restriction per specified boolean expression
+				CriteriaQuery<T> where(Predicate... restrictions);//applies restriction per specified predicate(s) with 'and' (conjunction)
+			}
+			
+Passing Parameter to the Query
+	• ParameterExpression
+		• A ParameterExpression interface represents a query parameter whose value is provided at the time when query is executed.
+	
+	• Following method is defined in CriteriaBuilder to create an instance of ParameterExpression:
+		ParameterExpression<T> parameter(Class<T> paramClass);
+		
+Criteria API - Aggregate Methods
+	• Criteria API - Aggregate Methods
+	
+	• Following are list of some methos which is provided by CriteriaBuilder interface
+		• avg(Expression<N> x);
+		• sum(Expression<N> x);
+		• sumAsLong(Expression<Integer> x);
+		• max(Expression<N> x);
+		• min(Expression<N> x);
+		• greatest(Expression<X> x);
+		• least(Expression<X> x);
+		• count(Expression<?> x);
+		
+Caching in JPA 2
+	• Caching optimize an application's performance and database access. By storing the data needed to serve requests, caching reduces the time required to access an object from the database.
+	
+	• JPA 2.0 supports two levels of Caching,
+		• JPA Level 1 (L1) Cache
+		• JPA Level 2 (L2) Cache.
+	
+	• JPA Level 1 Cache
+		• A JPA EntityManager uses persistence context to manage entities. The persistence context associated with the respective entity managers acts as the first-level cache.
+		
+JPA Level 2 Cache
+	• JPA Level 2 Cache
+		• It was introduced in the JPA 2.0 release. JPA provides a Cache API for basic cache operations, while level 2 cache shares the state of an entity -- which is accessed with the help of the EntityManagerFactory -- across various persistence contexts.
+		
+		• Entities cached in the second-level cache can live across multiple EntityManager sessions.
+		
+		• This helps improve performance by avoiding expensive database calls, keeping the entity data local to the application.
+	
+	• Second-level cache is optional for the JPA Provider
+		• Support for a second-level cache is not required by the Java Persistence API specification, setting the second-level cache mode in persistence.xml will have no effect if we use a persistence provider that does not implement a second-level cache.
+		
+		• Hibernate as the JPA provider has support for second-level cache.
+		
+Configure JPA Caching Example:
+	• Configure JPA Caching Example:
+		• To configure cache, you have to use shared-cache-mode element in persistence.xml and @Cacheable annotation.
+	
+	• Cache mode settings are as below.
+		• ALL : All entities are stored in second level cache for a given persistence unit.
+		• NONE : No entities are stored in second level cache (default).
+		• ENABLE_SELECTIVE : To cache only the entities annotated with @Cacheable or @Cacheable(true) default value for @Cacheable is true.
+		• DISABLE_SELECTIVE – To cache all entities not annotated with @Cacheable(false)
+	
+	• Prefer using ENABLE_SELECTIVE because it requires you to annotate an entity before it gets cached. So, you shouldn’t slow down your application by accidentally caching an entity that shouldn’t be cached.
+	
+Accessing Second-Level Cache via Cache interface
+	• Accessing Second-Level Cache via Cache interface
+		• An object representation for the second-level cache can be obtained getCache() method of EntityManagerFactory:
+	
+	• Cache getCache();
+		• The returned value is an instance of Cache interface which has following methods:
+			
+			public interface Cache {
+				public boolean contains(Class cls, Object primaryKey);//returns true if the specified entity is in the cache
+				public void evict(Class cls, Object primaryKey);//removes the specified entity from the cache
+				public void evict(Class cls);//removes all entities of the specified type from the cache
+				public void evictAll();//clear the cache
+			}
+			
+Locking
+	• Locking is a mechanism to avoid simultaneous updates which may result in unexpected results.
+	
+	• When two or more database transactions concurrently access the same data, locking is used to ensure that only one transaction at a time can change the data.
+	
+	• Types of Locking
+		• Optimistic Locking and
+		• Pessimistic Locking.
+
+Optimistic Locking
+	• Optimistic Locking is a check which ensures that from the beginning of a transaction to the commit, the target data is not modified by other user.
+	
+	• In order to implement optimistic locking your entity class must contains field or property annotated with @Version annotation. The entity is automatically enabled for optimistic locking if it has such field.
+	
+	• An entity including a property with @Version annotation. While using it, each transaction that reads data holds the value of the version property.
+	
+	• Before the transaction wants to make an update, it checks the version property again.
+	
+	• If the value has changed in the meantime an OptimisticLockException is thrown. Otherwise, the transaction commits the update and increments a value version property.
+
+Pessimistic Locking vs. Optimistic Locking
+	• Optimistic Locking
+		• Optimistic locking is based on detecting changes on entities by checking their version attribute.
+		• If any concurrent update takes place, OptmisticLockException occurs. After that, we can retry updating the data.
+		• This mechanism is suitable for applications which do much more reads than updates or deletes.
+	
+	• Pessimistic Locking
+		• Pessimistic locking mechanism involves locking entities on the database level.
+		• Each transaction can acquire a lock on data. As long as it holds the lock, no transaction can read, delete or make any updates on the locked data.
+		• Using pessimistic locking some time may result in deadlocks. However, it ensures greater integrity of data than optimistic locking.
+
+Version Attribute
+	• Version Attribute
+		• Version attributes is a property which annotated with @Version annotation. They are necessary for enabling optimistic locking.
+				
+				@Entity
+				public class Employee {
+					@Id
+					private Long id;
+					
+					private String name;
+					
+					@Version
+					private Integer version;
+					
+					// getters and setters
+				}
+				
+	• Rules needs to follow while declaring version attribute:
+		• Each entity class must have only one version attribute
+		• Type of a version attribute must be one of the following: int, Integer, long, Long, short, Short, java.sql.Timestamp
+		• You can retrieve a value of the version attribute via entity, but you mustn’t update or increment it. Only the persistence provider can do that, so data stays consistent.
+		• If you try to lock an entity which does not contain such attribute and the persistence provider does not support it, it will result in a PersitenceException.
+		
+Lock Modes
+	• JPA provides two different optimistic lock modes (and two aliases):
+		• OPTIMISTIC
+			• It obtains an optimistic read lock for all entities containing a version attribute
+		
+		• OPTIMISTIC_FORCE_INCREMENT
+			• It obtains an optimistic lock the same as OPTIMISTIC and additionally increments the version attribute value
+		
+		• READ
+			• It’s a synonym for OPTIMISTIC
+		
+		• WRITE
+			• It’s a synonym for OPTIMISTIC_FORCE_INCREMENT
+	
+	• All types listed above in the LockModeType class.
+	
+	• OPTIMISTIC (READ)
+		• OPTIMISTIC and READ lock modes are synonyms. However, JPA specification recommends us to use OPTIMISTIC in new applications.
+	
+		• OPTIMISTIC lock mode, should ensure any transaction fails to commit any modification on data that another transaction:
+			• has updated or deleted but not committed
+			• has updated or deleted successfully in the meantime
+	
+	• OPTIMISTIC_INCREMENT (WRITE)
+		• OPTIMISTIC_INCREMENT and WRITE are synonyms, but the OPTIMISTIC_INCREMENT is preferable.
+		• OPTIMISTIC_INCREMENT must meet the same conditions as OPTIMISTIC lock mode. Additionally, it increments the value of a version attribute. However, it’s not specified whether it should be done immediately or may be put off until commit or flush.
+		
+Using Optimistic Locking
+	• Using Optimistic Locking
+		• For a versioned entities optimistic locking is available by default.
+		• Yet there are several ways of requesting it explicitly.
+	
+	• Find Method
+		• To request optimistic locking we can pass the proper LockModeType as an argument to find method of EntityManager:
+				
+				entityManager.find(Employee.class, empId, LockModeType.OPTIMISTIC);
+	
+	• Query Object
+		• Enable locking using the setLockMode method of Query object:
+					
+					Query query = entityManager.createQuery("from Employee where id = :id");
+					query.setParameter("id", empId);
+					query.setLockMode(LockModeType.OPTIMISTIC_INCREMENT);
+					query.getResultList()
+
+	• Explicit Locking
+		• Enable a lock by calling EnitityManager’s lock method:
+				
+				Employee employee = entityManager.find(Employee.class, id);
+				entityManager.lock(employee, LockModeType.OPTIMISTIC);
+	
+	• NamedQuery
+		• Use @NamedQuery with the lockMode property:
+			
+			@NamedQuery(name="optimisticLock",
+			query="SELECT e FROM Employee e WHERE e.id LIKE :id", lockMode = WRITE)
+			
+Pessimistic Locking in JPA
+	• Pessimistic Locking in JPA
+		• Pessimistic lock ensure that no other transactions can modify or delete reserved data.
+		• There are two types of locks you can retain: an exclusive lock and a shared lock.
+
+	• Lock Modes
+		• JPA specification defines three pessimistic lock modes :
+		• PESSIMISTIC_READ – Allows you to obtain a shared lock and prevent the data from being updated or deleted
+		• PESSIMISTIC_WRITE – Allows you to obtain an exclusive lock and prevent the data from being read, updated or deleted
+		• PESSIMISTIC_FORCE_INCREMENT – It is Similar to PESSIMISTIC_WRITE and it additionally increments a version attribute of a versioned entity
+
+	• All of them are static members of the LockModeType class and allow transactions to obtain a database lock. They all are retained until the transaction commits or rolls back.
+
+JPA - PessimisticLockException
+	• JPA - PessimisticLockException
+		• PessimisticLockException is thrown if pessimistic lock cannot be obtained or if the time it takes to obtain a lock exceeds the value of javax.persistence.lock.timeout property.
+		• If javax.persistence.lock.timeout (milliseconds) property is not set by the application, a default value (depending on the provider and underlying database) is used.
+	
+	• Setting Lock Timeout
+		• javax.persistence.lock.timeout’ property allows you to set Timeout value.
+		• The timeout value is the number of milliseconds that we want to wait for obtaining a lock until the LockTimeoutException occurs.
+		• It’s also possible to specify ‘no wait’ locking by changing timeout value to zero.
+	
+	• Setting Timeout property in this way
+			
+			Map<String, Object> properties = new HashMap<>();
+			map.put("javax.persistence.lock.timeout", 1000L);
+			entityManager.find(Employee.class, 1L, LockModeType.PESSIMISTIC_READ, properties);
+			
+N+1 SELECT's Problems
+	• N+1 SELECT's Problems
+		• The N+1 problem can happen if the first query populates the primary object and the second query populates all the child objects for each of the unique primary objects returned.
+	
+	• Resolve N+1 SELECTs problem
+		• Useing Join Fetch
+		• Entity Graphs
+	
+	• Using Join Fetch
+		• The FETCH keyword of the JOIN FETCH statement is JPA-specific.
+		• It tells the persistence provider to not only join the two database tables within the query but to also initialize the association on the returned entity.
+		• You can use it with a JOIN and a LEFT JOIN statement
+		• JOIN FETCH can be used in your queries whenever you need to fetch an entity with all of its children at the same time. This results in a much less database traffic resulting in an improved performance.
+		
+JPA - Getting Entity's Lazy Proxy
+	• EntityManager.getReference()
+		• EntityManager.getReference(entityClass, primaryKey) can be used to get an entity instance whose state may be lazily initialized.
+		• The returned entity instance is a proxy whose field values are only initialized/loaded from database upon first access.
+	
+	• getReference() vs find()
+		• EntityManager.find() returns the fully initialized entity instance (except for the association configured with lazy fetch strategy), whereas EntityManager.getReference() methods returns uninitialized proxy of the entity.
+
+
