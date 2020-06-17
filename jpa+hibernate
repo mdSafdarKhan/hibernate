@@ -565,4 +565,5 @@ JPA - Getting Entity's Lazy Proxy
 	• getReference() vs find()
 		• EntityManager.find() returns the fully initialized entity instance (except for the association configured with lazy fetch strategy), whereas EntityManager.getReference() methods returns uninitialized proxy of the entity.
 
-
+Hibernate Lazy Loading
+	Also note that @OneToMany and @ManyToMany associations are defaulted to LAZY loading; and @OneToOne and @ManyToOne are defaulted to EAGER loading. This is important to remember to avoid any pitfall in future.
