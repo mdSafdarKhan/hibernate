@@ -48,4 +48,9 @@ public class Language {
 		this.languageName = languageName;
 	}
 
+	@Override
+	public String toString() {
+		return "Language [langageId=" + langageId + ", languageName=" + languageName + ", countries=" + countries + "]";
+	}
+
 }

@@ -30,7 +30,7 @@ public class HibernateUtil {
 			properties.setProperty(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
 			properties.setProperty(Environment.POOL_SIZE, "1");
 			properties.setProperty(Environment.SHOW_SQL, "true");
-			properties.setProperty(Environment.HBM2DDL_AUTO, "create");
+			properties.setProperty(Environment.HBM2DDL_AUTO, "update");
 
 			// Add persistent class into configuration
 			Configuration configuration = new Configuration();
